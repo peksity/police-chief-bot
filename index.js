@@ -245,10 +245,37 @@ client.on(Events.MessageCreate, async (message) => {
       } 
     }
     
+    // Non-command message in LFG channel - delete and warn
     try { 
       await message.delete(); 
       const w = await message.channel.send(`<@${message.author.id}> This is official business. Use \`?bounty\` to start a hunt.`); 
-      setTimeout(() => w.delete().catch(() => {}), 10000); 
+      setTimeout(() => w.delete().catch(() => {}), 10000);
+      
+      // DM the user with instructions
+      try {
+        const botCommandsChannel = message.guild.channels.cache.find(c => c.name === 'bot-commands');
+        await message.author.send({
+          embeds: [
+            new EmbedBuilder()
+              .setTitle('💀 Bounty LFG - Commands Only')
+              .setDescription(
+                `Hold it, hunter! The **#bounty-lfg** channel is for LFG commands only, not chat.\n\n` +
+                `**How to use:**\n` +
+                `1. Type \`?bounty\` to create a bounty session\n` +
+                `2. Select bounty type (Legendary pays best!)\n` +
+                `3. Pick a target (Etta Doyle is easiest)\n` +
+                `4. Choose payout strategy (Timer = MAX $$$)\n` +
+                `5. Click "Start Recruiting" when ready\n` +
+                `6. Posse joins by clicking the button (max 4)\n\n` +
+                `${botCommandsChannel ? `For all bot commands, check <#${botCommandsChannel.id}>` : 'Check #bot-commands for all available commands.'}`
+              )
+              .setColor(0x8B0000)
+              .setFooter({ text: 'Police Chief - Bounty Coordinator' })
+          ]
+        });
+      } catch (dmError) {
+        // DMs might be disabled
+      }
     } catch (e) {}
     return;
   }

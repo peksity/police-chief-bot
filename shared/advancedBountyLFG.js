@@ -6,8 +6,12 @@
  * ██████╔╝╚██████╔╝╚██████╔╝██║ ╚████║   ██║      ██║       ███████╗██║     ╚██████╔╝
  * ╚═════╝  ╚═════╝  ╚═════╝ ╚═╝  ╚═══╝   ╚═╝      ╚═╝       ╚══════╝╚═╝      ╚═════╝ 
  * 
- * ADVANCED BOUNTY HUNTER LFG SYSTEM
- * Hunt down outlaws for cash and gold
+ * ADVANCED BOUNTY HUNTER LFG SYSTEM v2
+ * - Up to 4 players (1 leader + 3 posse)
+ * - Host can kick players
+ * - Blacklist per session
+ * - DM notifications
+ * - Detailed descriptions
  */
 
 const { 
@@ -25,35 +29,96 @@ const {
 // ============================================
 
 const BOUNTY_CONFIG = {
-  // Bounty types
+  // Bounty types with descriptions
   bountyTypes: {
-    'regular': { name: '⭐ Regular Bounty', payout: { min: 10, max: 25 }, gold: 0.24, difficulty: 'Easy' },
-    'legendary': { name: '🌟 Legendary Bounty', payout: { min: 100, max: 225 }, gold: 0.48, difficulty: 'Hard' },
-    'infamous': { name: '💀 Infamous Bounty', payout: { min: 50, max: 150 }, gold: 0.36, difficulty: 'Medium' }
+    'regular': { 
+      name: '⭐ Regular Bounty', 
+      payout: { min: 10, max: 25 }, 
+      gold: 0.24,
+      description: 'Standard bounty poster. Quick & easy. Good for grinding.'
+    },
+    'legendary': { 
+      name: '🌟 Legendary Bounty', 
+      payout: { min: 100, max: 225 }, 
+      gold: 0.48,
+      description: 'HIGH PAYOUT! 5-star difficulty. Best with a posse.'
+    },
+    'infamous': { 
+      name: '💀 Infamous Bounty', 
+      payout: { min: 50, max: 150 }, 
+      gold: 0.36,
+      description: 'Weekly rotating target. Medium difficulty.'
+    }
   },
   
-  // Legendary bounties list
+  // Legendary bounties with detailed info
   legendaryBounties: {
-    'etta_doyle': { name: '👩 Etta Doyle', difficulty: 5, strategy: 'Wait for her to come to you' },
-    'cecil_tucker': { name: '🎭 Cecil C. Tucker', difficulty: 3, strategy: 'Theater showdown' },
-    'tobin_winfield': { name: '🏛️ Tobin Winfield', difficulty: 4, strategy: 'Ex-senator hideout' },
-    'sergio_vincenza': { name: '🎨 Sergio Vincenza', difficulty: 3, strategy: 'Artist turned outlaw' },
-    'philip_carlier': { name: '🐊 Philip Carlier', difficulty: 4, strategy: 'Swamp hunt' },
-    'owlhoot': { name: '🦉 Owlhoot Family', difficulty: 5, strategy: 'Family of outlaws' },
-    'red_ben': { name: '🔴 Red Ben Clempson', difficulty: 5, strategy: 'Train robbery mastermind' },
-    'yukon_nik': { name: '❄️ Yukon Nik', difficulty: 4, strategy: 'Cold-blooded killer' },
-    'gene_beau': { name: '🎪 Gene "Beau" Finley', difficulty: 3, strategy: 'Carnival con-man' },
-    'carmela': { name: '🔥 Carmela "La Muñeca"', difficulty: 4, strategy: 'Ruthless bandit leader' }
+    'etta_doyle': { 
+      name: '👩 Etta Doyle', 
+      difficulty: 5, 
+      description: 'EASIEST! Let her escape, wait by the wagon. She comes to you.'
+    },
+    'red_ben': { 
+      name: '🔴 Red Ben Clempson', 
+      difficulty: 5, 
+      description: 'Train heist. Multiple waves. High payout potential.'
+    },
+    'cecil_tucker': { 
+      name: '🎭 Cecil C. Tucker', 
+      difficulty: 3, 
+      description: 'Theater showdown in Saint Denis. Stealth optional.'
+    },
+    'tobin_winfield': { 
+      name: '🏛️ Tobin Winfield', 
+      difficulty: 4, 
+      description: 'Ex-senator in a fortified manor. Lots of guards.'
+    },
+    'philip_carlier': { 
+      name: '🐊 Philip Carlier', 
+      difficulty: 4, 
+      description: 'Swamp hunt in Lagras. Watch for gators!'
+    },
+    'owlhoot': { 
+      name: '🦉 Owlhoot Family', 
+      difficulty: 5, 
+      description: 'Capture the whole family. Multiple targets.'
+    },
+    'yukon_nik': { 
+      name: '❄️ Yukon Nik', 
+      difficulty: 4, 
+      description: 'Snow area. Cold-blooded killer. Dress warm.'
+    },
+    'gene_beau': { 
+      name: '🎪 Gene "Beau" Finley', 
+      difficulty: 3, 
+      description: 'Carnival con-man. Fun and easy hunt.'
+    },
+    'carmela': { 
+      name: '🔥 Carmela "La Muñeca"', 
+      difficulty: 4, 
+      description: 'Ruthless bandit leader. Bring firepower.'
+    },
+    'sergio_vincenza': { 
+      name: '🎨 Sergio Vincenza', 
+      difficulty: 3, 
+      description: 'Artist turned outlaw. Relatively easy.'
+    }
   },
   
-  // Payout strategy
+  // Payout strategy with descriptions
   payoutStrategy: {
-    'speed': { name: '⚡ Speed Run', description: 'Fast completion, lower payout' },
-    'timer': { name: '⏱️ Timer Method', description: 'Wait for max payout (12+ mins)' }
+    'speed': { 
+      name: '⚡ Speed Run', 
+      description: 'Complete ASAP. Lower payout but fast XP/Gold grind.'
+    },
+    'timer': { 
+      name: '⏱️ Timer Method', 
+      description: 'Wait until 30 seconds left. MAX PAYOUT! $225+ possible.'
+    }
   },
   
-  // Session settings
-  minPlayers: 1, // Can solo bounties
+  // Session settings - 4 PLAYERS MAX
+  minPlayers: 1,
   maxPlayers: 4,
   sessionTimeout: 30 * 60 * 1000,
   voiceChannelTimeout: 10 * 60 * 1000
@@ -62,13 +127,14 @@ const BOUNTY_CONFIG = {
 // Active sessions storage
 const activeSessions = new Map();
 const userCooldowns = new Map();
+const kickedUsers = new Map();
 
 // ============================================
 // INITIALIZE LFG SYSTEM
 // ============================================
 
 function initialize(client) {
-  console.log('[BOUNTY LFG] Initializing advanced Bounty Hunter LFG system...');
+  console.log('[BOUNTY LFG] Initializing advanced Bounty LFG system v2...');
   
   client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
@@ -81,7 +147,7 @@ function initialize(client) {
   
   setInterval(() => checkSessionTimeouts(client), 60000);
   
-  console.log('[BOUNTY LFG] ✅ Advanced Bounty LFG system initialized');
+  console.log('[BOUNTY LFG] ✅ Advanced Bounty LFG v2 initialized');
 }
 
 // ============================================
@@ -94,15 +160,15 @@ async function createSession(message, client) {
   
   // Check cooldown
   const cooldown = userCooldowns.get(userId);
-  if (cooldown && Date.now() - cooldown < 2 * 60 * 1000) {
-    const remaining = Math.ceil((2 * 60 * 1000 - (Date.now() - cooldown)) / 1000);
-    return message.reply(`⏳ Easy there, hunter. Wait ${remaining} seconds before posting another bounty.`);
+  if (cooldown && Date.now() - cooldown < 3 * 60 * 1000) {
+    const remaining = Math.ceil((3 * 60 * 1000 - (Date.now() - cooldown)) / 1000);
+    return message.reply(`⏳ Hold it, hunter. Wait ${remaining} seconds before posting another bounty.`);
   }
   
   // Check existing session
   for (const [sessionId, session] of activeSessions) {
     if (session.host === userId) {
-      return message.reply(`❌ You already have an active bounty! End it first with \`?endbounty\``);
+      return message.reply(`❌ You already have an active bounty! Use Cancel or wait for it to expire.`);
     }
   }
   
@@ -120,9 +186,9 @@ async function createSession(message, client) {
     hostName: message.author.username,
     platform: platform,
     players: [{ userId: userId, name: message.author.username }],
-    bountyType: null,
+    bountyType: 'legendary',
     legendaryTarget: null,
-    payoutStrategy: 'timer', // Default to max payout
+    payoutStrategy: 'timer',
     status: 'setup',
     voiceChannel: null,
     messageId: null,
@@ -134,7 +200,9 @@ async function createSession(message, client) {
     bountiesCompleted: 0
   };
   
-  const setupEmbed = await createSetupEmbed(session, guild);
+  kickedUsers.set(sessionId, new Set());
+  
+  const setupEmbed = createSetupEmbed(session);
   const setupComponents = createSetupComponents(sessionId, session);
   
   const msg = await message.channel.send({ 
@@ -149,139 +217,146 @@ async function createSession(message, client) {
 }
 
 // ============================================
-// EMBEDS
+// SETUP EMBED
 // ============================================
 
-async function createSetupEmbed(session, guild) {
-  const host = await guild.members.fetch(session.host).catch(() => null);
+function createSetupEmbed(session) {
+  const bountyInfo = BOUNTY_CONFIG.bountyTypes[session.bountyType];
+  const legendaryInfo = session.legendaryTarget ? BOUNTY_CONFIG.legendaryBounties[session.legendaryTarget] : null;
+  const strategyInfo = BOUNTY_CONFIG.payoutStrategy[session.payoutStrategy];
   
   const embed = new EmbedBuilder()
-    .setTitle('🎯 BOUNTY HUNT - SETUP')
-    .setDescription(`**Host:** ${host?.user.tag || 'Unknown'}\n**Platform:** ${session.platform}\n\n*Configure your bounty hunt below*`)
-    .addFields(
-      { name: '🎯 Bounty Type', value: session.bountyType ? BOUNTY_CONFIG.bountyTypes[session.bountyType].name : '❓ Not selected', inline: true },
-      { name: '⏱️ Payout Strategy', value: BOUNTY_CONFIG.payoutStrategy[session.payoutStrategy].name, inline: true }
+    .setTitle('💀 BOUNTY HUNT - SETUP')
+    .setDescription(
+      `**Host:** ${session.hostName}\n` +
+      `**Platform:** ${session.platform}\n\n` +
+      `*Configure your bounty hunt below*`
     )
-    .setColor(0xDC143C)
+    .addFields(
+      { 
+        name: '📋 Bounty Type', 
+        value: `${bountyInfo.name}\n*${bountyInfo.description}*`, 
+        inline: false 
+      },
+      { 
+        name: '🎯 Target', 
+        value: legendaryInfo 
+          ? `${legendaryInfo.name} (⭐${legendaryInfo.difficulty})\n*${legendaryInfo.description}*` 
+          : session.bountyType === 'legendary' ? '❓ Select a legendary target' : '🎲 Random from posters',
+        inline: false 
+      },
+      { 
+        name: '💰 Payout Strategy', 
+        value: `${strategyInfo.name}\n*${strategyInfo.description}*`, 
+        inline: false 
+      }
+    )
+    .setColor(0x8B0000)
     .setFooter({ text: 'Select your options, then click "Start Recruiting"' })
     .setTimestamp();
   
-  if (session.bountyType === 'legendary' && session.legendaryTarget) {
-    const target = BOUNTY_CONFIG.legendaryBounties[session.legendaryTarget];
-    embed.addFields(
-      { name: '🎯 Target', value: target.name, inline: true },
-      { name: '⚔️ Difficulty', value: '⭐'.repeat(target.difficulty), inline: true },
-      { name: '💡 Strategy', value: target.strategy, inline: false }
-    );
+  return embed;
+}
+
+// ============================================
+// RECRUITING EMBED
+// ============================================
+
+function createRecruitingEmbed(session) {
+  const bountyInfo = BOUNTY_CONFIG.bountyTypes[session.bountyType];
+  const legendaryInfo = session.legendaryTarget ? BOUNTY_CONFIG.legendaryBounties[session.legendaryTarget] : null;
+  const strategyInfo = BOUNTY_CONFIG.payoutStrategy[session.payoutStrategy];
+  
+  // Build player list
+  let playerList = '';
+  for (let i = 0; i < BOUNTY_CONFIG.maxPlayers; i++) {
+    if (session.players[i]) {
+      const player = session.players[i];
+      const isHost = player.userId === session.host;
+      playerList += `${i + 1}. ${isHost ? '⭐' : '🤠'} **${player.name}** ${isHost ? '(Leader)' : ''}\n`;
+    } else {
+      playerList += `${i + 1}. ⬜ *Open Slot*\n`;
+    }
   }
   
-  if (session.bountyType) {
-    const bounty = BOUNTY_CONFIG.bountyTypes[session.bountyType];
-    embed.addFields({ 
-      name: '💰 Potential Payout', 
-      value: `$${bounty.payout.min}-$${bounty.payout.max} + ${bounty.gold} Gold`, 
-      inline: false 
+  const targetDisplay = legendaryInfo 
+    ? `${legendaryInfo.name}` 
+    : bountyInfo.name;
+  
+  const embed = new EmbedBuilder()
+    .setTitle('💀 BOUNTY HUNT - RECRUITING')
+    .setDescription(
+      `**Host:** ${session.hostName} | **Platform:** ${session.platform}\n\n` +
+      `${targetDisplay} • ${strategyInfo.name}`
+    )
+    .addFields(
+      { name: '👥 Posse', value: playerList, inline: true },
+      { name: '📊 Info', value: 
+        `Slots: ${session.players.length}/${BOUNTY_CONFIG.maxPlayers}\n` +
+        `Cash: $${bountyInfo.payout.min}-${bountyInfo.payout.max}\n` +
+        `Gold: ${bountyInfo.gold} per run\n` +
+        `Status: ${session.status === 'in_progress' ? '🟢 HUNTING' : '🟡 RECRUITING'}`,
+        inline: true 
+      }
+    )
+    .setColor(session.status === 'in_progress' ? 0x00FF00 : 0x8B0000)
+    .setFooter({ text: `Session ID: ${session.id.slice(-8)} • Click Join to ride along!` })
+    .setTimestamp();
+  
+  if (session.bountiesCompleted > 0) {
+    embed.addFields({
+      name: '💰 Earnings',
+      value: `Bounties: ${session.bountiesCompleted} | Cash: $${session.totalCash} | Gold: ${session.totalGold.toFixed(2)}`,
+      inline: false
     });
   }
   
   return embed;
 }
 
-async function createRecruitingEmbed(session, guild) {
-  const host = await guild.members.fetch(session.host).catch(() => null);
-  const elapsed = session.startedAt ? formatTime(Date.now() - session.startedAt) : '0:00';
-  
-  let playerList = '';
-  for (let i = 0; i < BOUNTY_CONFIG.maxPlayers; i++) {
-    if (session.players[i]) {
-      const player = session.players[i];
-      const isHost = player.userId === session.host;
-      playerList += `${i + 1}. ${isHost ? '⭐' : '🔫'} **${player.name}** ${isHost ? '(Lead Hunter)' : ''}\n`;
-    } else {
-      playerList += `${i + 1}. ⬜ *Empty Slot*\n`;
-    }
-  }
-  
-  const bountyInfo = BOUNTY_CONFIG.bountyTypes[session.bountyType];
-  const strategyInfo = BOUNTY_CONFIG.payoutStrategy[session.payoutStrategy];
-  
-  let targetInfo = '';
-  if (session.bountyType === 'legendary' && session.legendaryTarget) {
-    const target = BOUNTY_CONFIG.legendaryBounties[session.legendaryTarget];
-    targetInfo = `\n🎯 **Target:** ${target.name}\n⚔️ **Difficulty:** ${'⭐'.repeat(target.difficulty)}`;
-  }
-  
-  const embed = new EmbedBuilder()
-    .setTitle(`🎯 BOUNTY HUNT - RECRUITING`)
-    .setDescription(`
-**━━━━━━━━━━━━━━━━━━━━━━━━━━━━**
-${bountyInfo.name}${targetInfo}
-⏱️ **Strategy:** ${strategyInfo.name}
-💰 **Payout:** $${bountyInfo.payout.min}-$${bountyInfo.payout.max} + ${bountyInfo.gold}g
-🎮 **Platform:** ${session.platform} Only
-**━━━━━━━━━━━━━━━━━━━━━━━━━━━━**
-    `)
-    .addFields(
-      { name: `🔫 Hunters (${session.players.length}/${BOUNTY_CONFIG.maxPlayers})`, value: playerList, inline: false }
-    )
-    .setColor(session.players.length >= BOUNTY_CONFIG.minPlayers ? 0x00FF00 : 0xDC143C)
-    .setFooter({ text: `Session ID: ${session.id.slice(-8)} • ⏱️ ${elapsed}` })
-    .setTimestamp();
-  
-  if (session.voiceChannel) {
-    embed.addFields({ name: '🔊 Voice Channel', value: `<#${session.voiceChannel}>`, inline: true });
-  }
-  
-  if (session.bountiesCompleted > 0) {
-    embed.addFields(
-      { name: '🎯 Bounties Caught', value: `${session.bountiesCompleted}`, inline: true },
-      { name: '💵 Cash Earned', value: `$${session.totalCash.toLocaleString()}`, inline: true },
-      { name: '🥇 Gold Earned', value: `${session.totalGold.toFixed(2)}`, inline: true }
-    );
-  }
-  
-  return embed;
-}
-
 // ============================================
-// COMPONENTS
+// SETUP COMPONENTS
 // ============================================
 
 function createSetupComponents(sessionId, session) {
+  // Bounty Type Dropdown
   const bountySelect = new StringSelectMenuBuilder()
     .setCustomId(`bounty_type_${sessionId}`)
-    .setPlaceholder('🎯 Select Bounty Type')
-    .addOptions(
-      Object.entries(BOUNTY_CONFIG.bountyTypes).map(([key, value]) => ({
-        label: value.name.replace(/[^\w\s]/g, '').trim(),
-        description: `${value.difficulty} | $${value.payout.min}-$${value.payout.max} + ${value.gold}g`,
-        value: key
-      }))
-    );
+    .setPlaceholder('📋 Select Bounty Type')
+    .addOptions([
+      { label: 'Regular Bounty', description: '$10-25 + 0.24 gold. Quick grind.', value: 'regular', emoji: '⭐' },
+      { label: 'Legendary Bounty', description: '$100-225 + 0.48 gold. HIGH PAYOUT!', value: 'legendary', emoji: '🌟' },
+      { label: 'Infamous Bounty', description: '$50-150 + 0.36 gold. Weekly target.', value: 'infamous', emoji: '💀' }
+    ]);
   
-  const rows = [new ActionRowBuilder().addComponents(bountySelect)];
+  // Legendary Target Dropdown (only show if legendary selected)
+  const legendarySelect = new StringSelectMenuBuilder()
+    .setCustomId(`bounty_target_${sessionId}`)
+    .setPlaceholder('🎯 Select Legendary Target')
+    .addOptions([
+      { label: 'Etta Doyle', description: 'EASIEST! She comes to you.', value: 'etta_doyle', emoji: '👩' },
+      { label: 'Red Ben Clempson', description: 'Train heist. High payout.', value: 'red_ben', emoji: '🔴' },
+      { label: 'Cecil C. Tucker', description: 'Theater showdown.', value: 'cecil_tucker', emoji: '🎭' },
+      { label: 'Tobin Winfield', description: 'Fortified manor.', value: 'tobin_winfield', emoji: '🏛️' },
+      { label: 'Philip Carlier', description: 'Swamp hunt.', value: 'philip_carlier', emoji: '🐊' },
+      { label: 'Owlhoot Family', description: 'Multiple targets.', value: 'owlhoot', emoji: '🦉' },
+      { label: 'Yukon Nik', description: 'Snow area killer.', value: 'yukon_nik', emoji: '❄️' },
+      { label: 'Gene Beau Finley', description: 'Carnival con-man.', value: 'gene_beau', emoji: '🎪' },
+      { label: 'Carmela La Muñeca', description: 'Bandit leader.', value: 'carmela', emoji: '🔥' },
+      { label: 'Sergio Vincenza', description: 'Artist outlaw.', value: 'sergio_vincenza', emoji: '🎨' }
+    ]);
   
-  // Add legendary target selector if legendary is selected
-  if (session.bountyType === 'legendary') {
-    const legendarySelect = new StringSelectMenuBuilder()
-      .setCustomId(`bounty_legendary_${sessionId}`)
-      .setPlaceholder('🌟 Select Legendary Target')
-      .addOptions(
-        Object.entries(BOUNTY_CONFIG.legendaryBounties).map(([key, value]) => ({
-          label: value.name.replace(/[^\w\s]/g, '').trim(),
-          description: `Difficulty: ${'★'.repeat(value.difficulty)}`,
-          value: key
-        }))
-      );
-    rows.push(new ActionRowBuilder().addComponents(legendarySelect));
-  }
+  // Payout Strategy Dropdown
+  const strategySelect = new StringSelectMenuBuilder()
+    .setCustomId(`bounty_strategy_${sessionId}`)
+    .setPlaceholder('💰 Select Payout Strategy')
+    .addOptions([
+      { label: 'Speed Run', description: 'Complete fast. Lower payout.', value: 'speed', emoji: '⚡' },
+      { label: 'Timer Method', description: 'Wait for MAX payout! ($225+)', value: 'timer', emoji: '⏱️' }
+    ]);
   
+  // Buttons
   const buttons = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`bounty_strategy_${sessionId}`)
-      .setLabel(`Strategy: ${session.payoutStrategy === 'timer' ? '⏱️ Timer' : '⚡ Speed'}`)
-      .setStyle(session.payoutStrategy === 'timer' ? ButtonStyle.Success : ButtonStyle.Secondary)
-      .setEmoji(session.payoutStrategy === 'timer' ? '⏱️' : '⚡'),
     new ButtonBuilder()
       .setCustomId(`bounty_start_${sessionId}`)
       .setLabel('Start Recruiting')
@@ -293,48 +368,55 @@ function createSetupComponents(sessionId, session) {
       .setStyle(ButtonStyle.Danger)
       .setEmoji('❌')
   );
-  rows.push(buttons);
   
-  return rows;
+  const components = [
+    new ActionRowBuilder().addComponents(bountySelect),
+    new ActionRowBuilder().addComponents(strategySelect),
+    buttons
+  ];
+  
+  // Add legendary select if legendary type is selected
+  if (session.bountyType === 'legendary') {
+    components.splice(1, 0, new ActionRowBuilder().addComponents(legendarySelect));
+  }
+  
+  return components;
 }
 
+// ============================================
+// RECRUITING COMPONENTS
+// ============================================
+
 function createRecruitingComponents(sessionId, session) {
-  const buttons = new ActionRowBuilder().addComponents(
+  const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`bounty_join_${sessionId}`)
-      .setLabel(`Join Hunt (${session.players.length}/${BOUNTY_CONFIG.maxPlayers})`)
+      .setLabel('Join Hunt')
       .setStyle(ButtonStyle.Success)
-      .setEmoji('🔫')
-      .setDisabled(session.players.length >= BOUNTY_CONFIG.maxPlayers),
+      .setEmoji('🤠'),
     new ButtonBuilder()
       .setCustomId(`bounty_leave_${sessionId}`)
       .setLabel('Leave')
       .setStyle(ButtonStyle.Secondary)
       .setEmoji('🚪'),
     new ButtonBuilder()
-      .setCustomId(`bounty_ready_${sessionId}`)
-      .setLabel('Start Hunt!')
-      .setStyle(ButtonStyle.Primary)
-      .setEmoji('🎯')
-  );
-  
-  const hostButtons = new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId(`bounty_complete_${sessionId}`)
-      .setLabel('Bounty Caught!')
-      .setStyle(ButtonStyle.Success)
-      .setEmoji('💰'),
-    new ButtonBuilder()
-      .setCustomId(`bounty_failed_${sessionId}`)
-      .setLabel('Target Escaped')
-      .setStyle(ButtonStyle.Danger)
-      .setEmoji('💨'),
-    new ButtonBuilder()
       .setCustomId(`bounty_voice_${sessionId}`)
       .setLabel('Create Voice')
-      .setStyle(ButtonStyle.Secondary)
+      .setStyle(ButtonStyle.Primary)
       .setEmoji('🔊')
-      .setDisabled(session.voiceChannel !== null),
+  );
+  
+  const row2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`bounty_ready_${sessionId}`)
+      .setLabel('Start Hunt')
+      .setStyle(ButtonStyle.Success)
+      .setEmoji('🚀'),
+    new ButtonBuilder()
+      .setCustomId(`bounty_complete_${sessionId}`)
+      .setLabel('Complete')
+      .setStyle(ButtonStyle.Primary)
+      .setEmoji('✅'),
     new ButtonBuilder()
       .setCustomId(`bounty_end_${sessionId}`)
       .setLabel('End Session')
@@ -342,7 +424,27 @@ function createRecruitingComponents(sessionId, session) {
       .setEmoji('🛑')
   );
   
-  return [buttons, hostButtons];
+  // Host-only: Kick player dropdown
+  if (session.players.length > 1) {
+    const kickOptions = session.players
+      .filter(p => p.userId !== session.host)
+      .map(p => ({
+        label: `Kick ${p.name}`,
+        value: p.userId,
+        emoji: '👢'
+      }));
+    
+    if (kickOptions.length > 0) {
+      const kickSelect = new StringSelectMenuBuilder()
+        .setCustomId(`bounty_kick_${sessionId}`)
+        .setPlaceholder('👢 Kick a player (Leader only)')
+        .addOptions(kickOptions);
+      
+      return [row1, row2, new ActionRowBuilder().addComponents(kickSelect)];
+    }
+  }
+  
+  return [row1, row2];
 }
 
 // ============================================
@@ -351,7 +453,6 @@ function createRecruitingComponents(sessionId, session) {
 
 async function handleButton(interaction, client) {
   const customId = interaction.customId;
-  
   if (!customId.startsWith('bounty_')) return;
   
   const parts = customId.split('_');
@@ -359,16 +460,12 @@ async function handleButton(interaction, client) {
   const sessionId = parts.slice(2).join('_');
   
   const session = activeSessions.get(sessionId);
-  
   if (!session) {
-    return interaction.reply({ content: '❌ Session not found or expired.', ephemeral: true });
+    return interaction.reply({ content: '❌ Session expired or not found.', ephemeral: true });
   }
   
   try {
     switch (action) {
-      case 'strategy':
-        await handleStrategyToggle(interaction, session, sessionId);
-        break;
       case 'start':
         await handleStartRecruiting(interaction, session, sessionId, client);
         break;
@@ -381,17 +478,14 @@ async function handleButton(interaction, client) {
       case 'leave':
         await handleLeaveSession(interaction, session, sessionId, client);
         break;
+      case 'voice':
+        await handleCreateVoice(interaction, session, sessionId, client);
+        break;
       case 'ready':
         await handleReadyUp(interaction, session, sessionId, client);
         break;
       case 'complete':
-        await handleBountyComplete(interaction, session, sessionId, client);
-        break;
-      case 'failed':
-        await handleBountyFailed(interaction, session, sessionId, client);
-        break;
-      case 'voice':
-        await handleCreateVoice(interaction, session, sessionId, client);
+        await handleRunComplete(interaction, session, sessionId, client);
         break;
       case 'end':
         await handleEndSession(interaction, session, sessionId, client);
@@ -399,265 +493,16 @@ async function handleButton(interaction, client) {
     }
   } catch (error) {
     console.error('[BOUNTY LFG] Button error:', error);
-    interaction.reply({ content: '❌ An error occurred.', ephemeral: true }).catch(() => {});
+    interaction.reply({ content: '❌ Something went wrong.', ephemeral: true }).catch(() => {});
   }
-}
-
-async function handleStrategyToggle(interaction, session, sessionId) {
-  if (interaction.user.id !== session.host) {
-    return interaction.reply({ content: '❌ Only the lead hunter can change settings.', ephemeral: true });
-  }
-  
-  session.payoutStrategy = session.payoutStrategy === 'timer' ? 'speed' : 'timer';
-  
-  const embed = await createSetupEmbed(session, interaction.guild);
-  const components = createSetupComponents(sessionId, session);
-  
-  await interaction.update({ embeds: [embed], components });
-}
-
-async function handleStartRecruiting(interaction, session, sessionId, client) {
-  if (interaction.user.id !== session.host) {
-    return interaction.reply({ content: '❌ Only the lead hunter can start recruiting.', ephemeral: true });
-  }
-  
-  if (!session.bountyType) {
-    return interaction.reply({ content: '❌ Please select a bounty type first!', ephemeral: true });
-  }
-  
-  if (session.bountyType === 'legendary' && !session.legendaryTarget) {
-    return interaction.reply({ content: '❌ Please select a legendary target!', ephemeral: true });
-  }
-  
-  session.status = 'recruiting';
-  session.startedAt = Date.now();
-  
-  const embed = await createRecruitingEmbed(session, interaction.guild);
-  const components = createRecruitingComponents(sessionId, session);
-  
-  await interaction.update({ embeds: [embed], components });
-  
-  const bountyInfo = BOUNTY_CONFIG.bountyTypes[session.bountyType];
-  await interaction.channel.send({
-    content: `🎯 **BOUNTY POSTED!** ${bountyInfo.name} | ${session.platform} | Looking for hunters!`,
-    allowedMentions: { parse: [] }
-  });
-}
-
-async function handleCancelSession(interaction, session, sessionId, client) {
-  if (interaction.user.id !== session.host) {
-    return interaction.reply({ content: '❌ Only the lead hunter can cancel.', ephemeral: true });
-  }
-  
-  await cleanupSession(session, client);
-  activeSessions.delete(sessionId);
-  
-  const embed = new EmbedBuilder()
-    .setTitle('❌ Bounty Hunt Cancelled')
-    .setDescription('The lead hunter cancelled this bounty.')
-    .setColor(0xFF0000);
-  
-  await interaction.update({ embeds: [embed], components: [] });
-}
-
-async function handleJoinSession(interaction, session, sessionId, client) {
-  const userId = interaction.user.id;
-  
-  if (session.players.find(p => p.userId === userId)) {
-    return interaction.reply({ content: '❌ You\'re already on this hunt!', ephemeral: true });
-  }
-  
-  // Platform check
-  const member = await interaction.guild.members.fetch(userId);
-  const isPS5 = member.roles.cache.some(r => r.name.includes('PS5') || r.name.includes('Primary: PS5'));
-  const isPS4 = member.roles.cache.some(r => r.name.includes('PS4') || r.name.includes('Primary: PS4'));
-  const userPlatform = isPS5 ? 'PS5' : isPS4 ? 'PS4' : 'Unknown';
-  
-  if (session.platform !== 'Unknown' && userPlatform !== 'Unknown' && session.platform !== userPlatform) {
-    return interaction.reply({ 
-      content: `❌ Platform mismatch! This bounty is for **${session.platform}** hunters only.`, 
-      ephemeral: true 
-    });
-  }
-  
-  if (session.players.length >= BOUNTY_CONFIG.maxPlayers) {
-    return interaction.reply({ content: '❌ Hunt party is full!', ephemeral: true });
-  }
-  
-  session.players.push({ userId: userId, name: interaction.user.username });
-  
-  const embed = await createRecruitingEmbed(session, interaction.guild);
-  const components = createRecruitingComponents(sessionId, session);
-  
-  await interaction.update({ embeds: [embed], components });
-  
-  await interaction.channel.send({
-    content: `🔫 **${interaction.user.username}** joined the hunt! (${session.players.length}/${BOUNTY_CONFIG.maxPlayers})`,
-    allowedMentions: { parse: [] }
-  });
-}
-
-async function handleLeaveSession(interaction, session, sessionId, client) {
-  const userId = interaction.user.id;
-  
-  if (userId === session.host) {
-    return interaction.reply({ content: '❌ You\'re the lead hunter! Use "End Session" to close.', ephemeral: true });
-  }
-  
-  const playerIndex = session.players.findIndex(p => p.userId === userId);
-  if (playerIndex === -1) {
-    return interaction.reply({ content: '❌ You\'re not on this hunt.', ephemeral: true });
-  }
-  
-  session.players.splice(playerIndex, 1);
-  
-  const embed = await createRecruitingEmbed(session, interaction.guild);
-  const components = createRecruitingComponents(sessionId, session);
-  
-  await interaction.update({ embeds: [embed], components });
-}
-
-async function handleReadyUp(interaction, session, sessionId, client) {
-  session.status = 'in_progress';
-  
-  const embed = await createRecruitingEmbed(session, interaction.guild);
-  embed.setTitle('🎯 BOUNTY HUNT - IN PROGRESS');
-  embed.setColor(0x00FF00);
-  
-  const components = createRecruitingComponents(sessionId, session);
-  
-  await interaction.update({ embeds: [embed], components });
-  
-  const mentions = session.players.map(p => `<@${p.userId}>`).join(' ');
-  let targetMsg = '';
-  if (session.bountyType === 'legendary' && session.legendaryTarget) {
-    const target = BOUNTY_CONFIG.legendaryBounties[session.legendaryTarget];
-    targetMsg = `\n**Target:** ${target.name}\n**Tip:** ${target.strategy}`;
-  }
-  
-  await interaction.channel.send({
-    content: `🎯 **HUNT BEGINS!** ${mentions}${targetMsg}\n\nBring 'em in dead or alive! 🔫`
-  });
-}
-
-async function handleBountyComplete(interaction, session, sessionId, client) {
-  if (interaction.user.id !== session.host) {
-    return interaction.reply({ content: '❌ Only the lead hunter can mark bounties complete.', ephemeral: true });
-  }
-  
-  const bountyInfo = BOUNTY_CONFIG.bountyTypes[session.bountyType];
-  const cash = Math.floor(Math.random() * (bountyInfo.payout.max - bountyInfo.payout.min + 1)) + bountyInfo.payout.min;
-  const gold = bountyInfo.gold;
-  
-  session.bountiesCompleted++;
-  session.totalCash += cash;
-  session.totalGold += gold;
-  
-  const embed = await createRecruitingEmbed(session, interaction.guild);
-  embed.setTitle('🎯 BOUNTY HUNT - IN PROGRESS');
-  embed.setColor(0x00FF00);
-  
-  const components = createRecruitingComponents(sessionId, session);
-  
-  await interaction.update({ embeds: [embed], components });
-  
-  await recordCompletion(session, client);
-  
-  await interaction.channel.send({
-    content: `💰 **BOUNTY CAUGHT!** #${session.bountiesCompleted}\n+$${cash} | +${gold}g\nTotal: $${session.totalCash.toLocaleString()} | ${session.totalGold.toFixed(2)}g`,
-    allowedMentions: { parse: [] }
-  });
-}
-
-async function handleBountyFailed(interaction, session, sessionId, client) {
-  if (interaction.user.id !== session.host) {
-    return interaction.reply({ content: '❌ Only the lead hunter can mark this.', ephemeral: true });
-  }
-  
-  await interaction.channel.send({
-    content: `💨 **TARGET ESCAPED!** The bounty got away... Better luck next time, hunters.`,
-    allowedMentions: { parse: [] }
-  });
-  
-  await interaction.deferUpdate();
-}
-
-async function handleCreateVoice(interaction, session, sessionId, client) {
-  if (interaction.user.id !== session.host) {
-    return interaction.reply({ content: '❌ Only the lead hunter can create voice channels.', ephemeral: true });
-  }
-  
-  try {
-    const category = interaction.guild.channels.cache.find(
-      c => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes('red dead') || c.name.toLowerCase().includes('rdo'))
-    );
-    
-    const voiceChannel = await interaction.guild.channels.create({
-      name: `🎯 Bounty - ${session.hostName}`,
-      type: ChannelType.GuildVoice,
-      parent: category?.id,
-      userLimit: BOUNTY_CONFIG.maxPlayers,
-      permissionOverwrites: [
-        { id: interaction.guild.id, deny: [PermissionFlagsBits.Connect] },
-        ...session.players.map(p => ({
-          id: p.userId,
-          allow: [PermissionFlagsBits.Connect, PermissionFlagsBits.Speak]
-        }))
-      ]
-    });
-    
-    session.voiceChannel = voiceChannel.id;
-    
-    const embed = await createRecruitingEmbed(session, interaction.guild);
-    const components = createRecruitingComponents(sessionId, session);
-    
-    await interaction.update({ embeds: [embed], components });
-    
-    await interaction.channel.send({
-      content: `🔊 Voice channel created! <#${voiceChannel.id}>`,
-      allowedMentions: { parse: [] }
-    });
-    
-  } catch (error) {
-    console.error('[BOUNTY LFG] Voice channel error:', error);
-    await interaction.reply({ content: '❌ Failed to create voice channel.', ephemeral: true });
-  }
-}
-
-async function handleEndSession(interaction, session, sessionId, client) {
-  if (interaction.user.id !== session.host) {
-    return interaction.reply({ content: '❌ Only the lead hunter can end the session.', ephemeral: true });
-  }
-  
-  session.status = 'completed';
-  
-  await cleanupSession(session, client);
-  activeSessions.delete(sessionId);
-  userCooldowns.set(session.host, Date.now());
-  
-  const embed = new EmbedBuilder()
-    .setTitle('✅ BOUNTY SESSION COMPLETE')
-    .setDescription(`
-**Lead Hunter:** ${session.hostName}
-**Bounties Caught:** ${session.bountiesCompleted}
-**Cash Earned:** $${session.totalCash.toLocaleString()}
-**Gold Earned:** ${session.totalGold.toFixed(2)}
-**Hunters:** ${session.players.map(p => p.name).join(', ')}
-    `)
-    .setColor(0x00FF00)
-    .setFooter({ text: 'Thanks for using the Bounty Hunter LFG!' })
-    .setTimestamp();
-  
-  await interaction.update({ embeds: [embed], components: [] });
 }
 
 // ============================================
-// SELECT MENU HANDLER
+// SELECT MENU HANDLERS
 // ============================================
 
 async function handleSelectMenu(interaction, client) {
   const customId = interaction.customId;
-  
   if (!customId.startsWith('bounty_')) return;
   
   const parts = customId.split('_');
@@ -665,35 +510,317 @@ async function handleSelectMenu(interaction, client) {
   const sessionId = parts.slice(2).join('_');
   
   const session = activeSessions.get(sessionId);
-  
   if (!session) {
-    return interaction.reply({ content: '❌ Session not found.', ephemeral: true });
+    return interaction.reply({ content: '❌ Session expired or not found.', ephemeral: true });
   }
   
+  // Kick handler
+  if (type === 'kick') {
+    await handleKickPlayer(interaction, session, sessionId, client);
+    return;
+  }
+  
+  // Only host can change settings
   if (interaction.user.id !== session.host) {
-    return interaction.reply({ content: '❌ Only the lead hunter can change settings.', ephemeral: true });
+    return interaction.reply({ content: '❌ Only the leader can change settings.', ephemeral: true });
   }
   
   const value = interaction.values[0];
   
-  switch (type) {
-    case 'type':
-      session.bountyType = value;
-      session.legendaryTarget = null; // Reset target when type changes
-      break;
-    case 'legendary':
-      session.legendaryTarget = value;
-      break;
+  if (type === 'type') {
+    session.bountyType = value;
+    if (value !== 'legendary') {
+      session.legendaryTarget = null;
+    }
+  } else if (type === 'target') {
+    session.legendaryTarget = value;
+  } else if (type === 'strategy') {
+    session.payoutStrategy = value;
   }
   
-  const embed = await createSetupEmbed(session, interaction.guild);
+  const embed = createSetupEmbed(session);
   const components = createSetupComponents(sessionId, session);
   
   await interaction.update({ embeds: [embed], components });
 }
 
 // ============================================
-// UTILITIES
+// ACTION HANDLERS
+// ============================================
+
+async function handleStartRecruiting(interaction, session, sessionId, client) {
+  if (interaction.user.id !== session.host) {
+    return interaction.reply({ content: '❌ Only the leader can start recruiting.', ephemeral: true });
+  }
+  
+  if (session.bountyType === 'legendary' && !session.legendaryTarget) {
+    return interaction.reply({ content: '❌ Please select a legendary target first!', ephemeral: true });
+  }
+  
+  session.status = 'recruiting';
+  session.startedAt = Date.now();
+  
+  const embed = createRecruitingEmbed(session);
+  const components = createRecruitingComponents(sessionId, session);
+  
+  await interaction.update({ embeds: [embed], components });
+  
+  const bountyInfo = BOUNTY_CONFIG.bountyTypes[session.bountyType];
+  const targetInfo = session.legendaryTarget ? BOUNTY_CONFIG.legendaryBounties[session.legendaryTarget] : null;
+  
+  await interaction.channel.send({
+    content: `💀 **BOUNTY HUNT OPEN!** ${session.platform} | ${targetInfo ? targetInfo.name : bountyInfo.name} | Click Join below!`
+  });
+}
+
+async function handleJoinSession(interaction, session, sessionId, client) {
+  const userId = interaction.user.id;
+  
+  // Check if kicked
+  const kicked = kickedUsers.get(sessionId);
+  if (kicked && kicked.has(userId)) {
+    return interaction.reply({ 
+      content: '❌ You were removed from this hunt by the leader. Wait for the next `?bounty` command.', 
+      ephemeral: true 
+    });
+  }
+  
+  // Check if already in session
+  if (session.players.some(p => p.userId === userId)) {
+    return interaction.reply({ content: '❌ You\'re already in this hunt!', ephemeral: true });
+  }
+  
+  // Check if full
+  if (session.players.length >= BOUNTY_CONFIG.maxPlayers) {
+    return interaction.reply({ content: '❌ Hunt is full! (4 max)', ephemeral: true });
+  }
+  
+  // Check for required role
+  const member = interaction.member;
+  const requiredRoles = ['Bounty Hunter', 'Frontier Outlaw', '🐴 Frontier Outlaw', '💀 Bounty Hunter'];
+  const hasRole = member.roles.cache.some(r => requiredRoles.some(req => r.name.includes(req)));
+  
+  if (!hasRole) {
+    try {
+      const rolesChannel = interaction.guild.channels.cache.find(c => c.name === 'roles' || c.name === 'get-roles');
+      await interaction.user.send({
+        embeds: [
+          new EmbedBuilder()
+            .setTitle('💀 Bounty LFG - Role Required')
+            .setDescription(
+              `Hold it, hunter! You need the **Bounty Hunter** or **Frontier Outlaw** role to join hunts.\n\n` +
+              `${rolesChannel ? `Head to <#${rolesChannel.id}> to get your roles!` : 'Check the roles channel in the server.'}`
+            )
+            .setColor(0xFF6B6B)
+        ]
+      });
+    } catch (e) {}
+    
+    return interaction.reply({ 
+      content: '❌ You need the **Bounty Hunter** or **Frontier Outlaw** role! Check your DMs.', 
+      ephemeral: true 
+    });
+  }
+  
+  session.players.push({ userId: userId, name: interaction.user.username });
+  
+  const embed = createRecruitingEmbed(session);
+  const components = createRecruitingComponents(sessionId, session);
+  
+  await interaction.update({ embeds: [embed], components });
+  
+  await interaction.channel.send({
+    content: `🤠 **${interaction.user.username}** joined the hunt! (${session.players.length}/${BOUNTY_CONFIG.maxPlayers})`
+  });
+}
+
+async function handleLeaveSession(interaction, session, sessionId, client) {
+  const userId = interaction.user.id;
+  
+  if (userId === session.host) {
+    return interaction.reply({ content: '❌ As leader, use "End Session" to close the hunt.', ephemeral: true });
+  }
+  
+  const playerIndex = session.players.findIndex(p => p.userId === userId);
+  if (playerIndex === -1) {
+    return interaction.reply({ content: '❌ You\'re not in this hunt.', ephemeral: true });
+  }
+  
+  session.players.splice(playerIndex, 1);
+  
+  const embed = createRecruitingEmbed(session);
+  const components = createRecruitingComponents(sessionId, session);
+  
+  await interaction.update({ embeds: [embed], components });
+}
+
+async function handleKickPlayer(interaction, session, sessionId, client) {
+  if (interaction.user.id !== session.host) {
+    return interaction.reply({ content: '❌ Only the leader can kick players.', ephemeral: true });
+  }
+  
+  const kickUserId = interaction.values[0];
+  
+  const playerIndex = session.players.findIndex(p => p.userId === kickUserId);
+  if (playerIndex === -1) {
+    return interaction.reply({ content: '❌ Player not found.', ephemeral: true });
+  }
+  
+  const kickedPlayer = session.players[playerIndex];
+  session.players.splice(playerIndex, 1);
+  
+  const kicked = kickedUsers.get(sessionId);
+  if (kicked) kicked.add(kickUserId);
+  
+  try {
+    const kickedMember = await interaction.guild.members.fetch(kickUserId);
+    await kickedMember.send({
+      embeds: [
+        new EmbedBuilder()
+          .setTitle('💀 Removed from Bounty Hunt')
+          .setDescription(
+            `You were removed from **${session.hostName}**'s bounty hunt.\n\n` +
+            `Wait for the next \`?bounty\` command to join a new one.`
+          )
+          .setColor(0xFF6B6B)
+      ]
+    });
+  } catch (e) {}
+  
+  const embed = createRecruitingEmbed(session);
+  const components = createRecruitingComponents(sessionId, session);
+  
+  await interaction.update({ embeds: [embed], components });
+  
+  await interaction.channel.send({
+    content: `👢 **${kickedPlayer.name}** was removed from the hunt by the leader.`
+  });
+}
+
+async function handleCreateVoice(interaction, session, sessionId, client) {
+  if (interaction.user.id !== session.host) {
+    return interaction.reply({ content: '❌ Only the leader can create voice channels.', ephemeral: true });
+  }
+  
+  if (session.voiceChannel) {
+    return interaction.reply({ content: `🔊 Voice already exists: <#${session.voiceChannel}>`, ephemeral: true });
+  }
+  
+  try {
+    const category = interaction.guild.channels.cache.find(
+      c => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes('rdo') || c.name.toLowerCase().includes('red dead'))
+    );
+    
+    const voiceChannel = await interaction.guild.channels.create({
+      name: `💀 Bounty - ${session.hostName}`,
+      type: ChannelType.GuildVoice,
+      parent: category?.id,
+      userLimit: BOUNTY_CONFIG.maxPlayers
+    });
+    
+    session.voiceChannel = voiceChannel.id;
+    
+    const embed = createRecruitingEmbed(session);
+    const components = createRecruitingComponents(sessionId, session);
+    
+    await interaction.update({ embeds: [embed], components });
+    
+    await interaction.channel.send({ content: `🔊 Voice channel created! <#${voiceChannel.id}>` });
+  } catch (error) {
+    console.error('[BOUNTY LFG] Voice error:', error);
+    await interaction.reply({ content: '❌ Failed to create voice channel.', ephemeral: true });
+  }
+}
+
+async function handleReadyUp(interaction, session, sessionId, client) {
+  if (interaction.user.id !== session.host) {
+    return interaction.reply({ content: '❌ Only the leader can start.', ephemeral: true });
+  }
+  
+  session.status = 'in_progress';
+  
+  const embed = createRecruitingEmbed(session);
+  const components = createRecruitingComponents(sessionId, session);
+  
+  await interaction.update({ embeds: [embed], components });
+  
+  const mentions = session.players.map(p => `<@${p.userId}>`).join(' ');
+  await interaction.channel.send({
+    content: `🚀 **HUNT STARTING!** ${mentions}\n\nBring 'em in dead or alive! 💀`
+  });
+}
+
+async function handleRunComplete(interaction, session, sessionId, client) {
+  if (interaction.user.id !== session.host) {
+    return interaction.reply({ content: '❌ Only the leader can mark complete.', ephemeral: true });
+  }
+  
+  const bountyInfo = BOUNTY_CONFIG.bountyTypes[session.bountyType];
+  const cash = session.payoutStrategy === 'timer' ? bountyInfo.payout.max : bountyInfo.payout.min;
+  const gold = bountyInfo.gold;
+  
+  session.bountiesCompleted++;
+  session.totalCash += cash;
+  session.totalGold += gold;
+  
+  const embed = createRecruitingEmbed(session);
+  const components = createRecruitingComponents(sessionId, session);
+  
+  await interaction.update({ embeds: [embed], components });
+  
+  await interaction.channel.send({
+    content: `💰 **BOUNTY #${session.bountiesCompleted} COMPLETE!** +$${cash} +${gold} gold | Total: $${session.totalCash} + ${session.totalGold.toFixed(2)} gold`
+  });
+}
+
+async function handleCancelSession(interaction, session, sessionId, client) {
+  if (interaction.user.id !== session.host) {
+    return interaction.reply({ content: '❌ Only the leader can cancel.', ephemeral: true });
+  }
+  
+  await cleanupSession(session, client);
+  activeSessions.delete(sessionId);
+  kickedUsers.delete(sessionId);
+  
+  await interaction.update({
+    embeds: [
+      new EmbedBuilder()
+        .setTitle('❌ Bounty Hunt Cancelled')
+        .setDescription(`**${session.hostName}** cancelled the hunt.`)
+        .setColor(0xFF0000)
+    ],
+    components: []
+  });
+}
+
+async function handleEndSession(interaction, session, sessionId, client) {
+  if (interaction.user.id !== session.host) {
+    return interaction.reply({ content: '❌ Only the leader can end.', ephemeral: true });
+  }
+  
+  userCooldowns.set(session.host, Date.now());
+  
+  await cleanupSession(session, client);
+  activeSessions.delete(sessionId);
+  kickedUsers.delete(sessionId);
+  
+  const embed = new EmbedBuilder()
+    .setTitle('💀 Bounty Hunt Complete!')
+    .setDescription(`**Leader:** ${session.hostName}`)
+    .addFields(
+      { name: '💵 Total Cash', value: `$${session.totalCash}`, inline: true },
+      { name: '🥇 Total Gold', value: `${session.totalGold.toFixed(2)}`, inline: true },
+      { name: '🎯 Bounties', value: `${session.bountiesCompleted}`, inline: true },
+      { name: '👥 Posse', value: session.players.map(p => p.name).join(', '), inline: false }
+    )
+    .setColor(0x00FF00)
+    .setTimestamp();
+  
+  await interaction.update({ embeds: [embed], components: [] });
+}
+
+// ============================================
+// UTILITY FUNCTIONS
 // ============================================
 
 async function cleanupSession(session, client) {
@@ -711,48 +838,17 @@ function checkSessionTimeouts(client) {
     if (now - session.createdAt > BOUNTY_CONFIG.sessionTimeout) {
       cleanupSession(session, client);
       activeSessions.delete(sessionId);
+      kickedUsers.delete(sessionId);
     }
   }
 }
 
-async function recordCompletion(session, client) {
-  try {
-    await client.db.query(
-      `INSERT INTO bounty_completions (session_id, host_id, players, bounty_type, legendary_target, cash, gold, completed_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
-      [session.id, session.host, JSON.stringify(session.players.map(p => p.userId)), session.bountyType, session.legendaryTarget, session.totalCash, session.totalGold]
-    );
-  } catch (e) {
-    console.error('[BOUNTY LFG] Record error:', e);
-  }
-}
-
-function formatTime(ms) {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  if (hours > 0) return `${hours}:${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
-  return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
-}
-
 async function createTables(client) {
-  try {
-    await client.db.query(`
-      CREATE TABLE IF NOT EXISTS bounty_completions (
-        id SERIAL PRIMARY KEY,
-        session_id VARCHAR(64),
-        host_id VARCHAR(32),
-        players JSONB,
-        bounty_type VARCHAR(32),
-        legendary_target VARCHAR(32),
-        cash INTEGER DEFAULT 0,
-        gold DECIMAL(10,2) DEFAULT 0,
-        completed_at TIMESTAMP DEFAULT NOW()
-      )
-    `);
-  } catch (e) {
-    console.error('[BOUNTY LFG] Table error:', e);
-  }
+  console.log('[BOUNTY LFG] Using in-memory session storage');
 }
 
-module.exports = { initialize, createSession, createTables, BOUNTY_CONFIG };
+module.exports = {
+  initialize,
+  createSession,
+  createTables
+};
