@@ -469,10 +469,10 @@ function createMainEmbed(session) {
   }
   
   // Build posse list
-  let posseList = `1.👑 **${session.hostUsername}** \`${session.hostPsn}\`\n`;
+  let posseList = `1.👑 **${session.hostUsername}** (PSN: ${session.hostPsn})\n`;
   for (let i = 0; i < 5; i++) {
     if (session.crew[i]) {
-      posseList += `${i + 2}. ${session.crew[i].username} \`${session.crew[i].psn}\`\n`;
+      posseList += `${i + 2}. ${session.crew[i].username} (PSN: ${session.crew[i].psn})\n`;
     } else {
       posseList += `${i + 2}. 🟢 *Open*\n`;
     }
