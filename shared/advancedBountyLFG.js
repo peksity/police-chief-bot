@@ -359,7 +359,7 @@ async function handleStrategy(interaction) {
   if (!setup || setup.hostId !== interaction.user.id) return interaction.reply({ content: '❌ Not your setup.', ephemeral: true });
   
   setup.data.strategy = interaction.values[0];
-  setup.data.voice = false;
+  setup.data.voice = true;
   setup.step = 6;
   await interaction.update({ embeds: [createSetupEmbed(6, setup.data)], components: createFinalOptions(setupId) });
 }
@@ -370,7 +370,7 @@ async function handleDifficulty(interaction) {
   if (!setup || setup.hostId !== interaction.user.id) return interaction.reply({ content: '❌ Not your setup.', ephemeral: true });
   
   setup.data.difficulty = interaction.values[0];
-  setup.data.voice = false;
+  setup.data.voice = true;
   setup.step = 6;
   await interaction.update({ embeds: [createSetupEmbed(6, setup.data)], components: createFinalOptions(setupId) });
 }
@@ -536,7 +536,9 @@ function createSessionControls(session) {
   if (session.status === 'in_progress') {
     row2.addComponents(new ButtonBuilder().setCustomId(`bounty_done_${session.id}`).setLabel('Done').setStyle(ButtonStyle.Success).setEmoji('✅'));
   }
-  row2.addComponents(new ButtonBuilder().setCustomId(`bounty_end_${session.id}`).setLabel('End').setStyle(ButtonStyle.Danger).setEmoji('⭕'));
+  if (session.status === 'completed') {
+    row2.addComponents(new ButtonBuilder().setCustomId(`bounty_end_${session.id}`).setLabel('End').setStyle(ButtonStyle.Danger).setEmoji('⭕'));
+  }
   rows.push(row2);
   
   return rows;
@@ -638,8 +640,8 @@ async function handleDone(interaction) {
   
   // Post new embed at bottom
   const newMsg = await channel.send({
-    embeds: [createSessionEmbed(session)],
-    components: createSessionButtons(session)
+    embeds: [createMainEmbed(session)],
+    components: createSessionControls(session)
   });
   
   session.messageId = newMsg.id;
