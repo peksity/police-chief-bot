@@ -269,32 +269,6 @@ client.on(Events.MessageCreate, async (message) => {
       await message.delete(); 
       const w = await message.channel.send(`<@${message.author.id}> This is official business. Use \`?bounty\` to start a hunt.`); 
       setTimeout(() => w.delete().catch(() => {}), 10000);
-      
-      // DM the user with instructions
-      try {
-        const botCommandsChannel = message.guild.channels.cache.find(c => c.name === 'bot-commands');
-        await message.author.send({
-          embeds: [
-            new EmbedBuilder()
-              .setTitle('💀 Bounty LFG - Commands Only')
-              .setDescription(
-                `Hold it, hunter! The **#bounty-lfg** channel is for LFG commands only, not chat.\n\n` +
-                `**How to use:**\n` +
-                `1. Type \`?bounty\` to create a bounty session\n` +
-                `2. Select bounty type (Legendary pays best!)\n` +
-                `3. Pick a target (Etta Doyle is easiest)\n` +
-                `4. Choose payout strategy (Timer = MAX $$$)\n` +
-                `5. Click "Start Recruiting" when ready\n` +
-                `6. Posse joins by clicking the button (max 4)\n\n` +
-                `${botCommandsChannel ? `For all bot commands, check <#${botCommandsChannel.id}>` : 'Check #bot-commands for all available commands.'}`
-              )
-              .setColor(0x8B0000)
-              .setFooter({ text: 'Police Chief - Bounty Coordinator' })
-          ]
-        });
-      } catch (dmError) {
-        // DMs might be disabled
-      }
     } catch (e) {}
     return;
   }
@@ -349,33 +323,7 @@ client.on(Events.MessageCreate, async (message) => {
     // BOUNTY COMMAND IN WRONG CHANNEL - Redirect to #bounty-lfg
     if (cmd === 'bounty' || cmd === 'hunt' || cmd === 'legendary') {
       const lfgChannel = message.guild.channels.cache.find(c => c.name === 'bounty-lfg');
-      
-      // Reply in channel
       await message.reply(`*points to board* Wrong place, hunter! Head to ${lfgChannel ? `<#${lfgChannel.id}>` : '#bounty-lfg'} for official bounty business.`);
-      
-      // DM the user with instructions
-      try {
-        await message.author.send({
-          embeds: [
-            new EmbedBuilder()
-              .setTitle('💀 Bounty LFG - Wrong Channel!')
-              .setDescription(
-                `Hold it, hunter! The \`?bounty\` command only works in the **#bounty-lfg** channel.\n\n` +
-                `**How to use:**\n` +
-                `1. Go to ${lfgChannel ? `<#${lfgChannel.id}>` : '#bounty-lfg'}\n` +
-                `2. Type \`?bounty\` to create a session\n` +
-                `3. Enter your PSN username\n` +
-                `4. Select bounty type (Legendary pays best!)\n` +
-                `5. Pick a target (Etta Doyle is easiest)\n` +
-                `6. Choose payout strategy (Timer = MAX $$$)\n` +
-                `7. Click "Start Recruiting" when ready\n\n` +
-                `Posse joins by clicking the button (max 4).`
-              )
-              .setColor(0x8B0000)
-              .setFooter({ text: 'Police Chief - Bounty Coordinator' })
-          ]
-        });
-      } catch (dmError) {}
       return;
     }
   }

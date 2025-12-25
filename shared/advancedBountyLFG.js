@@ -417,7 +417,7 @@ async function handleStart(interaction) {
     try {
       const guild = interaction.guild;
       const category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes('red dead') || c.name.toLowerCase().includes('rdo')));
-      voiceChannel = await guild.channels.create({ name: `💀 ${setup.hostUsername}'s Hunt`, type: ChannelType.GuildVoice, parent: category?.id, userLimit: 7 });
+      voiceChannel = await guild.channels.create({ name: `💀 ${setup.hostUsername}'s Hunt`, type: ChannelType.GuildVoice, parent: category?.id, userLimit: 6 });
     } catch (e) {}
   }
   
@@ -466,7 +466,7 @@ function createMainEmbed(session) {
   
   // Build posse list
   let posseList = `1.👑 **${session.hostUsername}** \`${session.hostPsn}\`\n`;
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 5; i++) {
     if (session.crew[i]) {
       posseList += `${i + 2}. ${session.crew[i].username} \`${session.crew[i].psn}\`\n`;
     } else {
@@ -491,7 +491,7 @@ function createMainEmbed(session) {
     .setTitle(`💀 BOUNTY HUNT - ${session.status.toUpperCase()}`)
     .setDescription(`**Host:** ${session.hostUsername} \`${session.hostPsn}\`\n${typeInfo}`)
     .addFields(
-      { name: `🤠 Posse (${crewSize}/7)`, value: posseList, inline: true },
+      { name: `🤠 Posse (${crewSize}/6)`, value: posseList, inline: true },
       { name: '💰 Payouts', value: payoutInfo, inline: true }
     )
     .setColor(session.status === 'recruiting' ? COLORS.wanted : session.status === 'in_progress' ? COLORS.badge : COLORS.success)
@@ -515,7 +515,7 @@ function createSessionControls(session) {
   
   // Row 1: Join/Leave/Voice
   const row1 = new ActionRowBuilder();
-  if (session.status === 'recruiting' && session.crew.length < 6) {
+  if (session.status === 'recruiting' && session.crew.length < 5) {
     row1.addComponents(new ButtonBuilder().setCustomId(`bounty_join_${session.id}`).setLabel('Join').setStyle(ButtonStyle.Success).setEmoji('🎯'));
   }
   row1.addComponents(
@@ -544,7 +544,7 @@ async function handleJoin(interaction) {
   if (!session) return interaction.reply({ content: '❌ Session ended.', ephemeral: true });
   if (session.hostId === interaction.user.id) return interaction.reply({ content: '❌ You\'re the host!', ephemeral: true });
   if (session.crew.some(c => c.userId === interaction.user.id)) return interaction.reply({ content: '❌ Already in!', ephemeral: true });
-  if (session.crew.length >= 6) return interaction.reply({ content: '❌ Full! (7/7)', ephemeral: true });
+  if (session.crew.length >= 5) return interaction.reply({ content: '❌ Full! (6/6)', ephemeral: true });
   if (blacklistSystem && await blacklistSystem.isBlacklisted(session.hostId, interaction.user.id)) return interaction.reply({ content: '🚫 Blacklisted.', ephemeral: true });
   
   const modal = new ModalBuilder().setCustomId(`bounty_joinpsn_${sessionId}`).setTitle('Join Hunt')
@@ -557,7 +557,7 @@ async function handleJoin(interaction) {
     await updateSession(interaction.client, session);
     
     const channel = interaction.client.channels.cache.get(session.channelId);
-    await channel.send(`🎯 **${m.user.username}** joined the hunt! (${session.crew.length + 1}/7)`);
+    await channel.send(`🎯 **${m.user.username}** joined the hunt! (${session.crew.length + 1}/6)`);
     
     await m.reply({ content: '✅ Joined!', ephemeral: true });
   } catch (e) {}
