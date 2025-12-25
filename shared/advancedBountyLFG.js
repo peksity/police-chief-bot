@@ -625,10 +625,25 @@ async function handleDone(interaction) {
   
   session.status = 'completed';
   
-  await updateSession(interaction.client, session);
-  
   const channel = interaction.client.channels.cache.get(session.channelId);
+  
+  // Delete old message
+  try {
+    const oldMsg = await channel.messages.fetch(session.messageId);
+    await oldMsg.delete();
+  } catch (e) {}
+  
+  // Send completion notification
   await channel.send(`🎯 **BOUNTY COMPLETE!** | Everyone earned: ~$${session.expectedCash} + ${session.expectedGold} gold`);
+  
+  // Post new embed at bottom
+  const newMsg = await channel.send({
+    embeds: [createSessionEmbed(session)],
+    components: createSessionButtons(session)
+  });
+  
+  session.messageId = newMsg.id;
+  await updateSession(interaction.client, session);
   
   await interaction.reply({ content: `✅ Bounty marked complete! Press **End** to finish and delete voice channel.`, ephemeral: true });
 }
