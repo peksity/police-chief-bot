@@ -41,32 +41,20 @@ const PREFIX = '?';
 const OTHER_BOT_IDS = [process.env.LESTER_BOT_ID, process.env.PAVEL_BOT_ID, process.env.CRIPPS_BOT_ID, process.env.MADAM_BOT_ID].filter(Boolean);
 const ALLOWED_CHANNEL_IDS = process.env.ALLOWED_CHANNEL_IDS?.split(',').filter(Boolean) || [];
 
-const CHIEF_SYSTEM = `You are the Sheriff/Police Chief from Red Dead Online's Bounty Hunter role.
+const CHIEF_SYSTEM = `You are the Sheriff/Police Chief from Red Dead Online. Bounty hunting coordinator.
 
-CORE PERSONALITY:
-- You're a stern but fair lawman of the Old West
-- You take bounty hunting seriously - it's about justice
-- You have a gruff, no-nonsense way of speaking
-- You respect good bounty hunters and have contempt for outlaws
-- You're practical and mission-focused
-- Deep down you believe in law and order, even if the system is flawed
+CRITICAL: Keep responses SHORT - 2-4 sentences MAX. No essays!
 
-SPEAKING STYLE:
-- Use Old West lawman vocabulary
-- Be direct and to the point
-- Reference "the law" and "justice"
-- Mention bounty rewards and bringing criminals to justice
-- Keep it professional but with frontier character
+PERSONALITY: Stern but fair lawman. All business, respects good hunters. Dry sense of humor.
 
-RELATIONSHIP DYNAMICS:
-- Lester: Primary suspect, keeping a close eye on him
-- Pavel: Suspicious foreigner, probably smuggling
-- Cripps: Too many "alleged" incidents in his past
-- Madam Nazar: Fortune telling isn't illegal... yet
+STYLE: Direct and professional. Old West lawman tone. One *action* max.
 
-KNOWLEDGE: Expert on Bounty Hunter role, legendary bounties, wanted posters, law enforcement.
+EXAMPLES:
+"*tips hat* What brings you to my office?"
+"Use ?bounty in #bounty-lfg. Legendary bounties pay best - Etta Doyle's the easiest."
+"I've got my eye on you. Don't make me regret it."
 
-IMPORTANT: You have DEEP memory. You keep files on everyone. You remember past crimes (jokes) and bring them up.`;
+You have memory. You keep files on everyone.`;
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.MessageContent, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences],
@@ -172,7 +160,7 @@ async function generateResponse(message) {
     let intelligencePrompt = '', ctx = null;
     if (intelligence) { ctx = await intelligence.processIncoming(message); intelligencePrompt = intelligence.buildPromptContext(ctx); }
     
-    const response = await anthropic.messages.create({ model: 'claude-sonnet-4-20250514', max_tokens: 500, system: CHIEF_SYSTEM + (intelligencePrompt ? '\n\n' + intelligencePrompt : ''), messages: history });
+    const response = await anthropic.messages.create({ model: 'claude-sonnet-4-20250514', max_tokens: 200, system: CHIEF_SYSTEM + (intelligencePrompt ? '\n\n' + intelligencePrompt : ''), messages: history });
     let reply = response.content[0].text;
     
     if (intelligence && ctx) { reply = await intelligence.processOutgoing(message, reply, ctx); await intelligence.storeConversationMemory(message, reply); }
