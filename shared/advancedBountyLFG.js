@@ -416,9 +416,13 @@ async function handleStart(interaction) {
   if (setup.data.voice) {
     try {
       const guild = interaction.guild;
-      const category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes('red dead') || c.name.toLowerCase().includes('rdo')));
+      // Try specific Red Dead category ID first, then search by name
+      let category = guild.channels.cache.get('1453304762597376094');
+      if (!category) {
+        category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes('red dead') || c.name.toLowerCase().includes('rdo')));
+      }
       voiceChannel = await guild.channels.create({ name: `💀 ${setup.hostUsername}'s Hunt`, type: ChannelType.GuildVoice, parent: category?.id, userLimit: 6 });
-    } catch (e) {}
+    } catch (e) { console.error('Voice channel error:', e); }
   }
   
   const session = {
@@ -619,16 +623,14 @@ async function handleDone(interaction) {
   if (!session) return interaction.reply({ content: '❌ Session ended.', ephemeral: true });
   if (interaction.user.id !== session.hostId) return interaction.reply({ content: '❌ Host only.', ephemeral: true });
   
-  session.bountyCount++;
-  session.totalCash += session.expectedCash;
-  session.totalGold += session.expectedGold;
+  session.status = 'completed';
   
   await updateSession(interaction.client, session);
   
   const channel = interaction.client.channels.cache.get(session.channelId);
-  await channel.send(`🎯 **BOUNTY #${session.bountyCount} COMPLETE!** +$${session.expectedCash} +${session.expectedGold} gold | Total: $${session.totalCash} + ${session.totalGold.toFixed(2)} gold`);
+  await channel.send(`🎯 **BOUNTY COMPLETE!** | Everyone earned: ~$${session.expectedCash} + ${session.expectedGold} gold`);
   
-  await interaction.reply({ content: `✅ Bounty #${session.bountyCount} done!`, ephemeral: true });
+  await interaction.reply({ content: `✅ Bounty marked complete! Press **End** to finish and delete voice channel.`, ephemeral: true });
 }
 
 async function handleEnd(interaction) {
